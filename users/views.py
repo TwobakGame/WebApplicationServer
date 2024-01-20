@@ -142,3 +142,6 @@ class DeleteUserView(APIView):
                 'error': '유효하지 않는 유저정보 입니다.'
                 },
                 status=status.HTTP_401_UNAUTHORIZED)
+        
+
+#
