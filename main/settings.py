@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     'users',
+    'rooms',
 ]
 
 MIDDLEWARE = [
@@ -175,6 +176,8 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+CACHE_TTL = 60 * 60
 
 CACHES = {
     "default": {
