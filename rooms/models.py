@@ -1,9 +1,8 @@
 from django.db import models
+from users.models import User
 
 # Create your models here.
 
 class room(models.Model):
-    room = models.IntegerField(blank=True, null=True)
-
-    def __str__(self):
-        return self.room
+    user = models.ForeignKey(User,blank=True, null=True ,on_delete=models.CASCADE)
+    score = models.IntegerField(blank=True, null=True)
