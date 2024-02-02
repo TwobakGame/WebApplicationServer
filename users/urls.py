@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SigninView, MyTokenObtainPairView, LogoutView, ChangePwView, ProfileUpdateView, DeleteUserView
+from .views import SigninView, MyTokenObtainPairView, LogoutView, ChangePwView, ProfileUpdateView, DeleteUserView, SaveScoreView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 app_name = 'user'
@@ -19,5 +19,7 @@ urlpatterns = [
     path('profileupdate/', ProfileUpdateView.as_view(), name='profileupdate'),
     # 회원 탈퇴
     path('deleteuser/', DeleteUserView.as_view(), name='deleteuser'),
+    # 점수 등록
+    path('savescore/', SaveScoreView.as_view(), name='savescore'),
     
 ]
