@@ -33,7 +33,7 @@ class User(AbstractUser):
     username = None
     userid = models.CharField(unique=True, max_length=255)
     nickname = models.CharField(max_length=50, null=True, blank=True)
-    score = models.CharField(null=True, blank=True)
+    score = models.CharField(null=True, blank=True, max_length=255)
     score_time = models.DateField(blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
