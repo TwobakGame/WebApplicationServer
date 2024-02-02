@@ -10,7 +10,7 @@ class SigninSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'nickname']  
+        fields = ['user_name', 'password', 'nickname']  
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -39,3 +39,10 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 # 회원 탈퇴
 class DeleteUserSerializer(serializers.Serializer):
      password = serializers.CharField(required=True, write_only=True)
+
+
+# 점수 저장
+class SaveScoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['score', 'score_time']

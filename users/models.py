@@ -5,13 +5,10 @@ from django.utils import timezone
 
 class UserManager(BaseUserManager):
 
-    def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
-        if not email:
-            raise ValueError('올바른 이메일 형식이 아닙니다.')
+    def _create_user(self, userid, password, is_staff, is_superuser, **extra_fields):
         now = timezone.now()
-        email = self.normalize_email(email)
         user = self.model(
-            email=email,
+            userid=userid,
             is_staff=is_staff,
             is_active=True,
             is_superuser=is_superuser,
@@ -24,27 +21,28 @@ class UserManager(BaseUserManager):
         return user
     
     # create_user
-    def create_user(self, email, password,**extra_fields):
-        return self._create_user(email, password, False, False, **extra_fields)
+    def create_user(self, userid, password,**extra_fields):
+        return self._create_user(userid, password, False, False, **extra_fields)
     
     # create_superuser
-    def create_superuser(self, email, password, **extra_fields):
-        return self._create_user(email, password, True, True, **extra_fields)
+    def create_superuser(self, userid, password, **extra_fields):
+        return self._create_user(userid, password, True, True, **extra_fields)
     
 
 class User(AbstractUser):
     username = None
-    email = models.EmailField(unique=True, max_length=255)
+    userid = models.CharField(unique=True, max_length=255)
     nickname = models.CharField(max_length=50, null=True, blank=True)
-    rank = models.IntegerField(null=True, blank=True)
+    score = models.CharField(null=True, blank=True)
+    score_time = models.DateField(blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
-    USERNAME_FIELD = 'email'
-    EMAIL_FIELD ='email'
+    USERNAME_FIELD = 'userid'
+    user_name_FIELD ='userid'
     REQUIRED_FIELDS = []
 
     objects = UserManager()

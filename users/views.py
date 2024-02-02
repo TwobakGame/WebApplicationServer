@@ -5,9 +5,11 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import SigninSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer
+from .serializers import SigninSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer, SaveScoreSerializer
 
 from .models import RefreshToken 
+
+from django.utils import timezone
 
 
 # 회원가입
@@ -19,7 +21,7 @@ class SigninView(APIView):
             serializer.save()
             return Response({'message': '회원가입 성공'}, status=status.HTTP_201_CREATED)
         
-        return Response({'error_code': status.HTTP_400_BAD_REQUEST},status= status.HTTP_400_BAD_REQUEST)
+        return Response({'error': serializer.errors,'error_code': status.HTTP_400_BAD_REQUEST},status= status.HTTP_400_BAD_REQUEST)
     
 
 # 로그인 성공시 토큰 발급
@@ -28,7 +30,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         # Add custom claims
-        token['email'] = user.username
+        token['userid'] = user.userid 
         return token
 
     def validate(self, attrs):
@@ -144,4 +146,23 @@ class DeleteUserView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED)
         
 
-#
+# 점수 등록
+class SaveScoreView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        current_time = timezone.now()
+        formatted_time = current_time.strftime('%Y-%m-%d') 
+        data = {'score': request.data.get('score', ''), 'score_time': formatted_time}
+        serializer = SaveScoreSerializer(user, data=data, context={'request': request})
+
+        if serializer.is_valid():
+            score_instance = serializer.save()
+            return Response(SaveScoreSerializer(score_instance).data, status=status.HTTP_200_OK)
+        
+        return Response({
+            'error_code': status.HTTP_400_BAD_REQUEST,
+            'error': serializer.errors
+            }, 
+            status=status.HTTP_400_BAD_REQUEST)
