@@ -19,9 +19,9 @@ class SigninView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': '회원가입 성공'}, status=status.HTTP_201_CREATED)
+            return Response({'resultcode': 'SUCCESS'}, status=status.HTTP_201_CREATED)
         
-        return Response({'error': serializer.errors,'error_code': status.HTTP_400_BAD_REQUEST},status= status.HTTP_400_BAD_REQUEST)
+        return Response({'resultcode':'fail','error': serializer.errors,'error_code': status.HTTP_400_BAD_REQUEST},status= status.HTTP_400_BAD_REQUEST)
     
 
 # 로그인 성공시 토큰 발급
