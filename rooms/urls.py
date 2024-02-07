@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MakeRoom, RoomSearch, RoomJoin
+from .views import MakeRoom, RoomSearch, RoomJoin, RoomDelete
 
 app_name = 'room'
 
@@ -11,5 +11,7 @@ urlpatterns = [
     # 모든 방 조회
     path('allinquiry/', RoomSearch.as_view(), name='allinquiry'),
     # 방 참여
-    path('join/', RoomJoin.as_view, name='join'),
+    path('join/', RoomJoin.as_view(), name='join'),
+    # 방 삭제
+    path('delete/', RoomDelete.as_view(), name='delete'),
 ]

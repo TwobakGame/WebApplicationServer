@@ -65,7 +65,7 @@ class RoomJoin(APIView):
         cache_key = f'{room_num}_{room_name}'
         room_info = cache.get(cache_key)
 
-        if room_info | room_info['roomPeople'] < 2 :
+        if len(room_info) >= 1 | room_info['roomPeople'] < 2 :
 
             room_info['roomPeople'] += 1
             cache.set(cache_key, room_info, timeout=60*360)
@@ -73,3 +73,19 @@ class RoomJoin(APIView):
             return Response({'resultcode': 'SUCCESS', 'data': cache.get(cache_key)}, status=status.HTTP_200_OK)
 
         return Response({'resultcode': 'FAIL', 'message': '일치하는 방 정보가 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class RoomDelete(APIView):
+    # 방 삭제
+    def post(self, request):
+        room_name = request.data.get("roomName")
+        room_num = request.data.get("roomNum")
+        cache_key = f'{room_num}_{room_name}'
+
+        if cache.get(cache_key):
+            cache.delete(cache_key)
+
+            return Response({'resultcode': 'SUCCESS', 'message': '방이 삭제되었습니다.'}, status=status.HTTP_200_OK)
+            
+        return Response({'resultcode': 'FAIL', 'message': '일치하는 방 정보가 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        
