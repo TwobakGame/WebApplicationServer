@@ -19,9 +19,9 @@ class SigninView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response({'resultcode': 'SUCCESS'}, status=status.HTTP_201_CREATED)
+            return Response({'resultcode': 'SUCCESS','message': '회원가입 성공'}, status=status.HTTP_201_CREATED)
         
-        return Response({'resultcode':'fail','error': serializer.errors,'error_code': status.HTTP_400_BAD_REQUEST},status= status.HTTP_400_BAD_REQUEST)
+        return Response({'resultcode':'FAIL','message': serializer.messages},status= status.HTTP_400_BAD_REQUEST)
     
 
 # 로그인 성공시 토큰 발급
@@ -42,7 +42,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         refresh_token, _ = RefreshToken.objects.get_or_create(user=self.user)
         refresh_token.token = str(refresh)
         refresh_token.save()
-        return {'RefreshToken': data['refresh'],'AccessToken': data['access']}
+        return {'resultcode': 'SUCCESS', 'RefreshToken': data['refresh'],'AccessToken': data['access']}
 
 
 # 로그인
@@ -57,7 +57,7 @@ class LogoutView(APIView):
     def post(self, request):
         request.user.refresh_token.delete()
 
-        return Response({'message': '로그아웃 성공'}, status=status.HTTP_200_OK)
+        return Response({'resultcode': 'SUCCESS', 'message': '로그아웃 성공'}, status=status.HTTP_200_OK)
     
 
 # 비밀번호 변경
@@ -75,17 +75,17 @@ class ChangePwView(APIView):
             if user.check_password(current_password):
                 user.set_password(new_password)
                 user.save()
-                return Response({'message': '비밀번호 변경 성공','status':200 },status=status.HTTP_200_OK)
+                return Response({'resultcode': 'SUCCESS', 'message': '비밀번호 변경 성공'},status=status.HTTP_200_OK)
             else:
                 return Response({
-                    'error_code': status.HTTP_400_BAD_REQUEST,
-                    'error': '현재 암호가 틀립니다.'
+                    'resultcode': 'FAIL',
+                    'message': '현재 암호가 틀립니다.'
                     },
                     status=status.HTTP_400_BAD_REQUEST)
             
         return Response({
-                        'error_code': status.HTTP_400_BAD_REQUEST,
-                        'error': serializer.errors['new_password']
+                        'resultcode': 'FAIL',
+                        'message': serializer.messages['new_password']
                         }, 
                         status=status.HTTP_400_BAD_REQUEST)
     
@@ -98,7 +98,7 @@ class ProfileUpdateView(APIView):
         user = request.user
         serializer = ProfileUpdateSerializer(user)
         
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'resultcode': 'SUCCESS', 'data': serializer.data}, status=status.HTTP_200_OK)
     
     def post(self, request):
         user = request.user
@@ -106,11 +106,11 @@ class ProfileUpdateView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'resultcode': 'SUCCESS', 'data': serializer.data}, status=status.HTTP_200_OK)
         
         return Response({
-            'error_code': status.HTTP_400_BAD_REQUEST,
-            'error': serializer.errors
+            'resultcode': 'FAIL',
+            'message': serializer.messages
             }, 
             status=status.HTTP_400_BAD_REQUEST)
 
@@ -131,17 +131,18 @@ class DeleteUserView(APIView):
                     RefreshToken.objects.get(user_id=user.id).delete()
                     user.is_active = False
                     user.save()
-                    return Response({'message':'회원 탈퇴 성공','status':status.HTTP_200_OK}, status=status.HTTP_200_OK)
+                    return Response({'resultcode': 'SUCCESS','message':'회원 탈퇴 성공'}, status=status.HTTP_200_OK)
+                
                 except RefreshToken.DoesNotExist:
                     return Response({
-                        'error_code': status.HTTP_404_NOT_FOUND,
-                        'error': '유효하지 않는 유저정보 입니다.'
+                        'resultcode': 'FAIL',
+                        'message': '유효하지 않는 유저정보 입니다.'
                         },
                         status=status.HTTP_404_NOT_FOUND)
             
             return Response({
-                'error_code': status.HTTP_401_UNAUTHORIZED,
-                'error': '유효하지 않는 유저정보 입니다.'
+                'resultcode': 'FAIL',
+                'message': '유효하지 않는 유저정보 입니다.'
                 },
                 status=status.HTTP_401_UNAUTHORIZED)
         
@@ -159,10 +160,10 @@ class SaveScoreView(APIView):
 
         if serializer.is_valid():
             score_instance = serializer.save()
-            return Response(SaveScoreSerializer(score_instance).data, status=status.HTTP_200_OK)
+            return Response({'resultcode': 'SUCCESS', 'data': SaveScoreSerializer(score_instance).data}, status=status.HTTP_200_OK)
         
         return Response({
-            'error_code': status.HTTP_400_BAD_REQUEST,
-            'error': serializer.errors
+            'resultcode': 'FAIL',
+            'message': serializer.messages
             }, 
             status=status.HTTP_400_BAD_REQUEST)
