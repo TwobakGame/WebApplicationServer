@@ -6,9 +6,9 @@ app_name = 'user'
 
 urlpatterns = [
     # 회원가입
-    path('signin/', SigninView.as_view(), name='signin'),
+    path('signup/', SigninView.as_view(), name='signup'),
     # 로그인
-    path('login/',  MyTokenObtainPairView.as_view(), name='login'),
+    path('signin/',  MyTokenObtainPairView.as_view(), name='signin'),
     # 토큰 재발급
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # 로그아웃
