@@ -5,23 +5,48 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import SigninSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer, SaveScoreSerializer
+from .serializers import SignUpSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer, SaveScoreSerializer
 
 from .models import RefreshToken 
 
 from django.utils import timezone
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+# 스웨거 헤더 토큰
+parameter_token = openapi.Parameter(
+        "Authorization",
+        openapi.IN_HEADER,
+        description = "Bearer access_token",
+        type = openapi.TYPE_STRING
+    )
+
 
 # 회원가입
 class SigninView(APIView):
+    @swagger_auto_schema(
+    operation_id='회원가입',
+    operation_description='회원가입',
+    request_body=SignUpSerializer,
+    responses={201: openapi.Response(
+        description="201 CREATED",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description="회원가입 성공"),
+            }
+        )
+    )}
+)
     def post(self, request):
-        serializer = SigninSerializer(data=request.data)
-
+        serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'resultcode': 'SUCCESS','message': '회원가입 성공'}, status=status.HTTP_201_CREATED)
         
-        return Response({'resultcode':'FAIL','message': serializer.messages},status= status.HTTP_400_BAD_REQUEST)
+        return Response({'resultcode':'FAIL','message': serializer.errors},status= status.HTTP_400_BAD_REQUEST)
     
 
 # 로그인 성공시 토큰 발급
@@ -29,10 +54,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        # Add custom claims
         token['userid'] = user.userid 
         return token
-
+    
     def validate(self, attrs):
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
@@ -47,13 +71,50 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 # 로그인
 class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
-
+    @swagger_auto_schema(
+    operation_id='로그인',
+    operation_description='로그인',
+    request_body=MyTokenObtainPairSerializer,
+    responses={200: openapi.Response(
+        description="200 OK",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                'RefreshToken': openapi.Schema(type=openapi.TYPE_STRING),
+                'AccessToken': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        )
+    )}
+)
+    def post(self, request):
+        serializer = MyTokenObtainPairSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
 # 로그아웃
 class LogoutView(APIView):
     permissions_classes = [IsAuthenticated]
-
+    
+    @swagger_auto_schema(
+    operation_id='로그아웃',
+    operation_description='로그아웃',
+    manual_parameters = [parameter_token],
+    responses={200: openapi.Response(
+        description="200 OK",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        )
+    )}
+)
     def post(self, request):
         request.user.refresh_token.delete()
 
@@ -63,7 +124,23 @@ class LogoutView(APIView):
 # 비밀번호 변경
 class ChangePwView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
+    @swagger_auto_schema(
+    operation_id='비밀번호 변경',
+    operation_description='비밀번호 변경',
+    manual_parameters = [parameter_token],
+    request_body=ChangePasswordSerializer,
+    responses={200: openapi.Response(
+        description="200 OK",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        )
+    )}
+)
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
 
@@ -94,12 +171,51 @@ class ChangePwView(APIView):
 class ProfileUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+    operation_id='회원정보 받기',
+    operation_description='회원정보 받기',
+    manual_parameters = [parameter_token],
+    responses={200: openapi.Response(
+        description="200 OK",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                'data' : openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'nickname': openapi.Schema(type=openapi.TYPE_STRING)
+        })
+            }
+        )
+    )}
+)
     def get(self, request):
         user = request.user
         serializer = ProfileUpdateSerializer(user)
         
         return Response({'resultcode': 'SUCCESS', 'data': serializer.data}, status=status.HTTP_200_OK)
     
+    @swagger_auto_schema(
+        operation_id='회원정보 수정',
+        operation_description='회원정보 수정',
+        manual_parameters = [parameter_token],
+        request_body=ProfileUpdateSerializer,
+        responses={200: openapi.Response(
+            description="200 OK",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                    'data' : openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'nickname': openapi.Schema(type=openapi.TYPE_STRING)
+            })
+                }
+            )
+        )}
+    )
     def post(self, request):
         user = request.user
         serializer = ProfileUpdateSerializer(user, data=request.data)
@@ -119,6 +235,22 @@ class ProfileUpdateView(APIView):
 class DeleteUserView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_id='회원 탈퇴',
+        operation_description='회원 탈퇴',
+        manual_parameters = [parameter_token],
+        request_body=ProfileUpdateSerializer,
+        responses={200: openapi.Response(
+            description="200 OK",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                    'message': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        )}
+    )
     def post(self, request):
         user = request.user
         serializer = DeleteUserSerializer(data=request.data)
@@ -151,6 +283,25 @@ class DeleteUserView(APIView):
 class SaveScoreView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_id='유저 점수 등록',
+        operation_description='유저 점수 등록',
+        manual_parameters = [parameter_token],
+        request_body=SaveScoreSerializer,
+        responses={200: openapi.Response(
+            description="200 OK",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                    'data': openapi.Schema(type=openapi.TYPE_OBJECT, properties={
+                        "score": openapi.Schema(type=openapi.TYPE_STRING),
+                        'score_time': openapi.Schema(type=openapi.TYPE_STRING)
+                    })
+                }
+            )
+        )}
+    )
     def post(self, request):
         user = request.user
         current_time = timezone.now()

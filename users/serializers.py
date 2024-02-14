@@ -6,7 +6,7 @@ from .models import User
 
 
 # 회원가입
-class SigninSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
