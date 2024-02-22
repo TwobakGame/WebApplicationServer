@@ -102,8 +102,12 @@ class RoomSearch(APIView):
         redis_conn = get_redis_connection("default")
 
         all_keys = redis_conn.keys("*")
+        data = []
 
-        return all_keys
+        for key in all_keys:
+            data.append(cache.get(int(key[3:])))
+
+        return data
     
     @swagger_auto_schema(
     operation_id='전체 방 조회',
