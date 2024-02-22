@@ -32,7 +32,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     userid = models.CharField(unique=True, max_length=255)
-    nickname = models.CharField(max_length=50, null=True, blank=True)
+    nickname = models.CharField(max_length=50, null=False, blank=False)
     score = models.CharField(null=True, blank=True, max_length=255)
     score_time = models.DateField(blank=True, null=True)
     is_staff = models.BooleanField(default=False)
