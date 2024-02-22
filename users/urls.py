@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SigninView, MyTokenObtainPairView, LogoutView, ChangePwView, ProfileUpdateView, DeleteUserView, SaveScoreView
+from .views import SigninView, MyTokenObtainPairView, LogoutView, ChangePwView, ProfileUpdateView, DeleteUserView, SaveScoreView, RankView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 app_name = 'user'
@@ -21,5 +21,7 @@ urlpatterns = [
     path('deleteuser/', DeleteUserView.as_view(), name='deleteuser'),
     # 점수 등록
     path('savescore/', SaveScoreView.as_view(), name='savescore'),
+    # 랭킹 조회
+    path('rank/', RankView.as_view(), name='rank'),
     
 ]

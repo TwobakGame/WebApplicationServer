@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .serializers import SignUpSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer, SaveScoreSerializer
 
-from .models import RefreshToken 
+from .models import RefreshToken, User 
 
 from django.utils import timezone
 
@@ -66,7 +66,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         refresh_token, _ = RefreshToken.objects.get_or_create(user=self.user)
         refresh_token.token = str(refresh)
         refresh_token.save()
-        return {'resultcode': 'SUCCESS', 'RefreshToken': data['refresh'],'AccessToken': data['access']}
+        return {'resultcode': 'SUCCESS', 'nickname': self.user.nickname, 'RefreshToken': data['refresh'],'AccessToken': data['access']}
 
 
 # 로그인
@@ -318,3 +318,29 @@ class SaveScoreView(APIView):
             'message': serializer.messages
             }, 
             status=status.HTTP_400_BAD_REQUEST)
+    
+
+# 랭킹
+class RankView(APIView):
+    @swagger_auto_schema(
+        operation_id='랭킹',
+        operation_description='랭킹',
+        responses={200: openapi.Response(
+            description="200 OK",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
+                    'data': openapi.Schema(type=openapi.TYPE_OBJECT, properties={
+                        "nickname":openapi.Schema(type=openapi.TYPE_STRING),
+                        "score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'score_time': openapi.Schema(type=openapi.TYPE_STRING)
+                    })
+                }
+            )
+        )}
+    )
+    def get(self,request):
+        data = User.objects.values('nickname','score','score_time').order_by('-score')[:10]
+
+        return Response({'resultcode': 'SUCCESS', 'data':data}, status=status.HTTP_200_OK)
