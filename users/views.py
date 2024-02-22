@@ -35,7 +35,7 @@ class SigninView(APIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
-                'message': openapi.Schema(type=openapi.TYPE_STRING, description="회원가입 성공"),
+                'detail': openapi.Schema(type=openapi.TYPE_STRING, description="회원가입 성공"),
             }
         )
     )}
@@ -44,9 +44,9 @@ class SigninView(APIView):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'resultcode': 'SUCCESS','message': '회원가입 성공'}, status=status.HTTP_201_CREATED)
+            return Response({'resultcode': 'SUCCESS','detail': '회원가입 성공'}, status=status.HTTP_201_CREATED)
         
-        return Response({'resultcode':'FAIL','message': serializer.errors},status= status.HTTP_400_BAD_REQUEST)
+        return Response({'resultcode':'FAIL','detail': serializer.errors},status= status.HTTP_400_BAD_REQUEST)
     
 
 # 로그인 성공시 토큰 발급
@@ -93,7 +93,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
             data = serializer.validated_data
             return Response(data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'resultcode': 'FAIL', 'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
 
 # 로그아웃
@@ -110,7 +110,7 @@ class LogoutView(APIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
-                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'detail': openapi.Schema(type=openapi.TYPE_STRING),
             }
         )
     )}
@@ -118,7 +118,7 @@ class LogoutView(APIView):
     def post(self, request):
         request.user.refresh_token.delete()
 
-        return Response({'resultcode': 'SUCCESS', 'message': '로그아웃 성공'}, status=status.HTTP_200_OK)
+        return Response({'resultcode': 'SUCCESS', 'detail': '로그아웃 성공'}, status=status.HTTP_200_OK)
     
 
 # 비밀번호 변경
@@ -136,7 +136,7 @@ class ChangePwView(APIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
-                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'detail': openapi.Schema(type=openapi.TYPE_STRING),
             }
         )
     )}
@@ -152,17 +152,17 @@ class ChangePwView(APIView):
             if user.check_password(current_password):
                 user.set_password(new_password)
                 user.save()
-                return Response({'resultcode': 'SUCCESS', 'message': '비밀번호 변경 성공'},status=status.HTTP_200_OK)
+                return Response({'resultcode': 'SUCCESS', 'detail': '비밀번호 변경 성공'},status=status.HTTP_200_OK)
             else:
                 return Response({
                     'resultcode': 'FAIL',
-                    'message': '현재 암호가 틀립니다.'
+                    'detail': '현재 암호가 틀립니다.'
                     },
                     status=status.HTTP_400_BAD_REQUEST)
             
         return Response({
                         'resultcode': 'FAIL',
-                        'message': serializer.messages['new_password']
+                        'detail': serializer.details['new_password']
                         }, 
                         status=status.HTTP_400_BAD_REQUEST)
     
@@ -226,7 +226,7 @@ class ProfileUpdateView(APIView):
         
         return Response({
             'resultcode': 'FAIL',
-            'message': serializer.messages
+            'detail': serializer.details
             }, 
             status=status.HTTP_400_BAD_REQUEST)
 
@@ -246,7 +246,7 @@ class DeleteUserView(APIView):
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'resultcode': openapi.Schema(type=openapi.TYPE_STRING, description="SUCCESS"),
-                    'message': openapi.Schema(type=openapi.TYPE_STRING)
+                    'detail': openapi.Schema(type=openapi.TYPE_STRING)
                 }
             )
         )}
@@ -263,18 +263,18 @@ class DeleteUserView(APIView):
                     RefreshToken.objects.get(user_id=user.id).delete()
                     user.is_active = False
                     user.save()
-                    return Response({'resultcode': 'SUCCESS','message':'회원 탈퇴 성공'}, status=status.HTTP_200_OK)
+                    return Response({'resultcode': 'SUCCESS','detail':'회원 탈퇴 성공'}, status=status.HTTP_200_OK)
                 
                 except RefreshToken.DoesNotExist:
                     return Response({
                         'resultcode': 'FAIL',
-                        'message': '유효하지 않는 유저정보 입니다.'
+                        'detail': '유효하지 않는 유저정보 입니다.'
                         },
                         status=status.HTTP_404_NOT_FOUND)
             
             return Response({
                 'resultcode': 'FAIL',
-                'message': '유효하지 않는 유저정보 입니다.'
+                'detail': '유효하지 않는 유저정보 입니다.'
                 },
                 status=status.HTTP_401_UNAUTHORIZED)
         
@@ -315,7 +315,7 @@ class SaveScoreView(APIView):
         
         return Response({
             'resultcode': 'FAIL',
-            'message': serializer.messages
+            'detail': serializer.details
             }, 
             status=status.HTTP_400_BAD_REQUEST)
     
