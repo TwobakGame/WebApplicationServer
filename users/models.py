@@ -33,7 +33,7 @@ class User(AbstractUser):
     username = None
     userid = models.CharField(unique=True, max_length=255)
     nickname = models.CharField(max_length=50, null=False, blank=False)
-    score = models.CharField(null=True, blank=True, max_length=255)
+    score = models.IntegerField(null=True, blank=True)
     score_time = models.DateField(blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -50,4 +50,4 @@ class User(AbstractUser):
 
 class RefreshToken(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='refresh_token')
-    token = models.CharField(max_length=255)
+    token = models.CharField(max_length=511)
