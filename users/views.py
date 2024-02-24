@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .serializers import SignUpSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer, SaveScoreSerializer
 
-from .models import RefreshToken, User 
+from .models import RefreshToken, User, Rank
 
 from django.utils import timezone
 
@@ -303,11 +303,11 @@ class SaveScoreView(APIView):
         )}
     )
     def post(self, request):
-        user = request.user
+        user_id = request.user.id
         current_time = timezone.now()
         formatted_time = current_time.strftime('%Y-%m-%d') 
-        data = {'score': request.data.get('score', ''), 'score_time': formatted_time}
-        serializer = SaveScoreSerializer(user, data=data, context={'request': request})
+        data = {'user':user_id, 'score': request.data.get('score', ''), 'score_time': formatted_time}
+        serializer = SaveScoreSerializer(data=data, context={'request': request})
 
         if serializer.is_valid():
             score_instance = serializer.save()
@@ -315,7 +315,7 @@ class SaveScoreView(APIView):
         
         return Response({
             'resultcode': 'FAIL',
-            'detail': serializer.details
+            'detail': serializer.errors
             }, 
             status=status.HTTP_400_BAD_REQUEST)
     
@@ -341,6 +341,6 @@ class RankView(APIView):
         )}
     )
     def get(self,request):
-        data = User.objects.values('nickname','score','score_time').order_by('-score')[:10]
+        data = Rank.objects.values('user__nickname','score','score_time').order_by('-score')[:10]
 
         return Response({'resultcode': 'SUCCESS', 'data':data}, status=status.HTTP_200_OK)

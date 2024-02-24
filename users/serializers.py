@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from .models import User
+from .models import User, Rank
 
 
 # 회원가입
@@ -44,5 +44,5 @@ class DeleteUserSerializer(serializers.Serializer):
 # 점수 저장
 class SaveScoreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['score', 'score_time']
+        model = Rank
+        fields = '__all__'
