@@ -108,9 +108,9 @@ class RoomSearch(APIView):
 
         for num, people in enumerate([i['roomPeople'] for i in data]):
             if people == 2:
+                cache.delete(data[num]['roomNum'])
                 data.pop(num)
         
-
         return data
     
     @swagger_auto_schema(
