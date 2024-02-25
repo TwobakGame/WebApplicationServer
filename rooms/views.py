@@ -103,9 +103,13 @@ class RoomSearch(APIView):
 
         all_keys = redis_conn.keys("*")
         data = []
-
         for key in all_keys:
             data.append(cache.get(int(key[3:])))
+
+        for num, people in enumerate([i['roomPeople'] for i in data]):
+            if people == 2:
+                data.pop(num)
+        
 
         return data
     
